@@ -83,14 +83,14 @@ func NewTransaction(pfcpMSG *Message, binaryMSG []byte, Conn *net.UDPConn, DestA
 	return
 }
 
-func (tx *Transaction) StartSendingRequest() (*ReceiveEvent, error) {
+func (tx *Transaction) StartSendingRequest(retries int, retryTimeout time.Duration) (*ReceiveEvent, error) {
 	if tx.TxType != SendingRequest {
 		return nil, errors.New("this transaction is not for sending request")
 	}
 
 	logger.PFCPLog.Tracef("Start Request Transaction [%d]", tx.SequenceNumber)
 
-	for iter := 0; iter < NumOfResend; iter++ {
+	for iter := 0; iter < retries; iter++ {
 		_, err := tx.Conn.WriteToUDP(tx.SendMsg, tx.DestAddr)
 		if err != nil {
 			return nil, fmt.Errorf("Request Transaction [%d]: %s", tx.SequenceNumber, err)
@@ -103,7 +103,7 @@ func (tx *Transaction) StartSendingRequest() (*ReceiveEvent, error) {
 				logger.PFCPLog.Tracef("Request Transaction [%d]: receive valid response", tx.SequenceNumber)
 				return &event, nil
 			}
-		case <-time.After(ResendRequestTimeOutPeriod * time.Second):
+		case <-time.After(retryTimeout):
 			logger.PFCPLog.Tracef("Request Transaction [%d]: timeout expire", tx.SequenceNumber)
 			continue
 		}

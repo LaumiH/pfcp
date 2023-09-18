@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/free5gc/pfcp"
 	"github.com/free5gc/pfcp/logger"
@@ -122,7 +123,7 @@ func (pfcpServer *PfcpServer) ReadFrom() (*Message, error) {
 	return msg, nil
 }
 
-func (pfcpServer *PfcpServer) WriteRequestTo(reqMsg *pfcp.Message, addr *net.UDPAddr) (resMsg *Message, err error) {
+func (pfcpServer *PfcpServer) WriteRequestTo(reqMsg *pfcp.Message, addr *net.UDPAddr, retries int, retryTimeout time.Duration) (resMsg *Message, err error) {
 	if !reqMsg.IsRequest() {
 		return nil, errors.New("not a request message")
 	}
@@ -139,7 +140,7 @@ func (pfcpServer *PfcpServer) WriteRequestTo(reqMsg *pfcp.Message, addr *net.UDP
 		return nil, err
 	}
 
-	return pfcpServer.StartReqTxLifeCycle(tx)
+	return pfcpServer.StartReqTxLifeCycle(tx, retries, retryTimeout)
 }
 
 func (pfcpServer *PfcpServer) WriteResponseTo(resMsg *pfcp.Message, addr *net.UDPAddr) {
@@ -211,7 +212,7 @@ func (pfcpServer *PfcpServer) RemoveTransaction(tx *pfcp.Transaction) (err error
 	return
 }
 
-func (pfcpServer *PfcpServer) StartReqTxLifeCycle(tx *pfcp.Transaction) (resMsg *Message, err error) {
+func (pfcpServer *PfcpServer) StartReqTxLifeCycle(tx *pfcp.Transaction, retries int, retryTimeout time.Duration) (resMsg *Message, err error) {
 	defer func() {
 		// End Transaction
 		rmErr := pfcpServer.RemoveTransaction(tx)
@@ -221,7 +222,7 @@ func (pfcpServer *PfcpServer) StartReqTxLifeCycle(tx *pfcp.Transaction) (resMsg 
 	}()
 
 	// Start Transaction
-	event, err := tx.StartSendingRequest()
+	event, err := tx.StartSendingRequest(retries, retryTimeout)
 	if err != nil {
 		return nil, err
 	}
