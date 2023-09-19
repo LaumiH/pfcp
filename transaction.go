@@ -90,7 +90,8 @@ func (tx *Transaction) StartSendingRequest(retries int, retryTimeout time.Durati
 
 	logger.PFCPLog.Tracef("Start Request Transaction [%d]", tx.SequenceNumber)
 
-	for iter := 0; iter < retries; iter++ {
+	// 0 retries == run once
+	for iter := 0; iter <= retries; iter++ {
 		_, err := tx.Conn.WriteToUDP(tx.SendMsg, tx.DestAddr)
 		if err != nil {
 			return nil, fmt.Errorf("Request Transaction [%d]: %s", tx.SequenceNumber, err)
