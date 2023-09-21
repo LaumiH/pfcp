@@ -119,3 +119,14 @@ func (n *NodeID) ResolveNodeIdToIp() net.IP {
 		return net.IPv4zero
 	}
 }
+
+func (n *NodeID) String() string {
+	switch n.NodeIdType {
+	case NodeIdTypeIpv4Address, NodeIdTypeIpv6Address:
+		return n.IP.String()
+	case NodeIdTypeFqdn:
+		return n.FQDN
+	default:
+		return net.IPv4zero.String()
+	}
+}
