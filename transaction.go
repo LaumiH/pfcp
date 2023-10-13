@@ -43,8 +43,8 @@ const (
 )
 
 const (
-	NumOfResend                 = 3
-	ResendRequestTimeOutPeriod  = 3
+	NumOfResend                 = 3 // unused
+	ResendRequestTimeOutPeriod  = 3 // unused
 	ResendResponseTimeOutPeriod = 15
 )
 
@@ -105,7 +105,7 @@ func (tx *Transaction) StartSendingRequest(retries int, retryTimeout time.Durati
 				return &event, nil
 			}
 		case <-time.After(retryTimeout):
-			logger.PFCPLog.Tracef("Request Transaction [%d]: timeout expire", tx.SequenceNumber)
+			logger.PFCPLog.Warnf("Request Transaction [%d]: timeout expire", tx.SequenceNumber)
 			continue
 		}
 	}
