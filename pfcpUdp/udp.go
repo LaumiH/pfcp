@@ -253,8 +253,7 @@ func (pfcpServer *PfcpServer) FindTransaction(msg *pfcp.Message, addr *net.UDPAd
 	if msg.IsResponse() {
 		txTable, exist := pfcpServer.ConsumerTable.Load(consumerAddr)
 		if !exist {
-			logger.PFCPLog.Warnln("In FindTransaction")
-			logger.PFCPLog.Warnf("Can't find txTable from consumer addr: [%s]", consumerAddr)
+			logger.PFCPLog.Warnf("In FindTransaction: cannot find txTable from consumer addr [%s]", consumerAddr)
 			return nil, fmt.Errorf("FindTransaction Error: txTable not found")
 		}
 
@@ -262,9 +261,7 @@ func (pfcpServer *PfcpServer) FindTransaction(msg *pfcp.Message, addr *net.UDPAd
 
 		tx, exist = txTable.Load(seqNum)
 		if !exist {
-			logger.PFCPLog.Warnln("In FindTransaction")
-			logger.PFCPLog.Warnln("Consumer Addr: ", consumerAddr)
-			logger.PFCPLog.Warnf("Can't find tx [%d] from txTable: ", seqNum)
+			logger.PFCPLog.Warnf("In FindTransaction: cannot find received seq [%d] from consumer [%s] in txTable", seqNum, consumerAddr)
 			return nil, fmt.Errorf("FindTransaction Error: sequence number [%d] not found", seqNum)
 		}
 	} else if msg.IsRequest() {
